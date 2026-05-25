@@ -72,7 +72,9 @@ class ModelState(ModelStateBase):
     self.MIN_LAT_CONTROL_SPEED = 0.3
     self.PLANPLUS_CONTROL: float = 1.0
 
-    buffer_length = 5 if self.model_runner.is_20hz else 2
+    features_buffer_shape = self.model_runner.input_shapes.get('features_buffer')
+    uses_frame_skip = features_buffer_shape is not None and len(features_buffer_shape) == 3 and features_buffer_shape[1] < 99
+    buffer_length = 5 if uses_frame_skip else 2
     self.warp = Warp(buffer_length)
     self.prev_desire = np.zeros(self.constants.DESIRE_LEN, dtype=np.float32)
     self.numpy_inputs = {}

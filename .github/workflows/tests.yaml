@@ -131,6 +131,13 @@ jobs:
         # Pre-compile Python bytecode so each pytest worker doesn't need to
         $PYTEST --collect-only -m 'not slow' -qq
         MAX_EXAMPLES=1 $PYTEST -m 'not slow'
+    - name: Run modeld_v2 tests
+      timeout-minutes: 2
+      run: |
+        # Run each test file separately — tinygrad JIT has process-global state
+        # that prevents co-collection of buffer and warp test files
+        pytest sunnypilot/modeld_v2/tests/test_buffer_logic_inspect.py -x
+        pytest sunnypilot/modeld_v2/tests/test_warp.py -x
 
   process_replay:
     name: process replay

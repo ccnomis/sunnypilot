@@ -14,6 +14,9 @@ collect_ignore = [
 ]
 collect_ignore_glob = [
   "selfdrive/debug/*.py",
+  # tinygrad JIT has process-global state. Collecting modeld_v2 source files loads
+  # tinygrad at import time (modeld.py → runners → tinygrad_runner.py), which corrupts
+  # JIT captures for test_warp.py in the same process. Run modeld_v2 tests separately.
   "sunnypilot/modeld_v2/*.py",
 ]
 
