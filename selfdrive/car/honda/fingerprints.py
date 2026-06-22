@@ -593,6 +593,7 @@ FW_VERSIONS = {
   },
   CAR.HONDA_ODYSSEY_CHN: {
     (Ecu.eps, 0x18da30f1, None): [
+      b'39990-T6A-J210\x00\x00',
       b'39990-T6D-H220\x00\x00',
     ],
     (Ecu.gateway, 0x18daeff1, None): [
@@ -600,9 +601,14 @@ FW_VERSIONS = {
     ],
     (Ecu.fwdRadar, 0x18dab0f1, None): [
       b'36161-T6A-P040\x00\x00',
+      b'36161-T6D-H130\x00\x00',
     ],
     (Ecu.srs, 0x18da53f1, None): [
+      b'77959-T6A-H130\x00\x00',
       b'77959-T6A-P110\x00\x00',
+    ],
+    (Ecu.combinationMeter, 0x18da60f1, None): [
+      b'78109-T6D-H610\x00\x00',
     ],
   },
   CAR.HONDA_PILOT: {
