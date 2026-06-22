@@ -12,7 +12,7 @@ from openpilot.common.params import Params
 from openpilot.system.hardware.hw import Paths
 
 
-MANIFEST_URL = "https://docs.sunnypilot.ai/models_v4.json"
+MANIFEST_URL = "https://docs.sunnypilot.ai/models_v5.json"
 DEFAULT_MODEL_KEY = "NDv2"
 USER_AGENT = "sunnypilot-c3-model-installer/1.0"
 FALLBACK_MODELS = {
@@ -124,7 +124,7 @@ def install_model(model_key: str, manifest_url: str) -> None:
 def main() -> None:
   parser = argparse.ArgumentParser(description="Install a sunnypilot custom driving model on-device.")
   parser.add_argument("--model-key", default=DEFAULT_MODEL_KEY,
-                      help=f"models_v4.json key to install, default: {DEFAULT_MODEL_KEY}")
+                      help=f"models_v5.json key to install, default: {DEFAULT_MODEL_KEY}")
   parser.add_argument("--manifest-url", default=MANIFEST_URL,
                       help=f"model manifest URL, default: {MANIFEST_URL}")
   args = parser.parse_args()
