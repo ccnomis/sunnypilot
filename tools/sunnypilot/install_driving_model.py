@@ -6,6 +6,7 @@ import os
 import tempfile
 import urllib.request
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 
 from openpilot.common.params import Params
 from openpilot.system.hardware.hw import Paths
@@ -13,6 +14,25 @@ from openpilot.system.hardware.hw import Paths
 
 MANIFEST_URL = "https://docs.sunnypilot.ai/models_v4.json"
 DEFAULT_MODEL_KEY = "NDv2"
+USER_AGENT = "sunnypilot-c3-model-installer/1.0"
+FALLBACK_MODELS = {
+  "NDv2": {
+    "display_name": "North Dakota (April 29, 2024)",
+    "full_name": "north-dakota",
+    "file_name": "supercombo-north-dakota.thneed",
+    "download_uri": {
+      "url": "https://gitlab.com/sunnypilot/public/docs.sunnypilot.ai/-/raw/main/models/supercombo-north-dakota.thneed",
+      "sha256": "f2714075d5ffad32255abcc0fa111e45f5f955f554f4ff572957670a4683f195",
+    },
+    "full_name_metadata": "gen4",
+    "file_name_metadata": "supercombo_metadata_gen4.pkl",
+    "download_uri_metadata": {
+      "url": "https://gitlab.com/sunnypilot/public/docs.sunnypilot.ai/-/raw/main/models/supercombo_metadata_gen4.pkl",
+      "sha256": "eec86f6e3cabdf52b761970128ba2bb678e256149eaafaa44e5b7969845f59cb",
+    },
+    "generation": "4",
+  },
+}
 
 
 def sha256sum(path: Path) -> str:
@@ -24,7 +44,8 @@ def sha256sum(path: Path) -> str:
 
 
 def download_json(url: str) -> dict:
-  with urllib.request.urlopen(url, timeout=30) as response:
+  request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+  with urllib.request.urlopen(request, timeout=30) as response:
     return json.loads(response.read().decode("utf-8"))
 
 
@@ -40,7 +61,13 @@ def download_file(url: str, destination: Path, expected_sha256: str) -> None:
 
   try:
     print(f"{destination.name}: downloading")
-    urllib.request.urlretrieve(url, tmp_path)
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(request, timeout=600) as response, tmp_path.open("wb") as f:
+      while True:
+        chunk = response.read(1024 * 1024)
+        if not chunk:
+          break
+        f.write(chunk)
     actual_sha256 = sha256sum(tmp_path)
     if actual_sha256 != expected_sha256:
       raise RuntimeError(
@@ -54,7 +81,13 @@ def download_file(url: str, destination: Path, expected_sha256: str) -> None:
 
 
 def install_model(model_key: str, manifest_url: str) -> None:
-  manifest = download_json(manifest_url)
+  try:
+    manifest = download_json(manifest_url)
+  except (HTTPError, URLError, TimeoutError) as e:
+    if model_key not in FALLBACK_MODELS:
+      raise
+    print(f"Could not fetch manifest ({e}); using bundled data for {model_key}")
+    manifest = FALLBACK_MODELS
   if model_key not in manifest:
     available = ", ".join(sorted(manifest))
     raise RuntimeError(f"model key {model_key!r} not found. Available keys: {available}")
